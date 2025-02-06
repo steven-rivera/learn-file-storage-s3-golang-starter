@@ -20,3 +20,14 @@ func mediaTypeToExt(mediaType string) string {
 	}
 	return "." + parts[1]
 }
+
+func isValidImageType(mediaType string) bool {
+	switch mediaType {
+		case "image/jpeg":
+			return true
+		case "image/png":
+			return true
+		default:
+			return false
+	}
+}
