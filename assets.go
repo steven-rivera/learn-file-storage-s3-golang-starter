@@ -1,6 +1,8 @@
 package main
 
 import (
+	"crypto/rand"
+	"encoding/base64"
 	"os"
 	"strings"
 )
@@ -12,6 +14,16 @@ func (cfg apiConfig) ensureAssetsDir() error {
 	return nil
 }
 
+
+func getAssetPath(mediaType string) string {
+	bytes := make([]byte, 32)
+	if _, err := rand.Read(bytes); err != nil {
+		panic("failed to generate random bytes")
+	}
+
+	assetName := base64.RawURLEncoding.EncodeToString(bytes)
+	return assetName + mediaTypeToExt(mediaType)
+}
 
 func mediaTypeToExt(mediaType string) string {
 	parts := strings.Split(mediaType, "/")

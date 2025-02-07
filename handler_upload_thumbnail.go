@@ -65,7 +65,7 @@ func (cfg *apiConfig) handlerUploadThumbnail(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	assetDiskPath := videoIDString + mediaTypeToExt(mediaType)
+	assetDiskPath := getAssetPath(mediaType)
 	path := filepath.Join(cfg.assetsRoot, assetDiskPath)
 
 	dst, err := os.Create(path)
@@ -79,6 +79,7 @@ func (cfg *apiConfig) handlerUploadThumbnail(w http.ResponseWriter, r *http.Requ
 		respondWithError(w, http.StatusInternalServerError, "Error saving file", err)
 		return 
 	}
+
 
 	thumbnailURL := fmt.Sprintf("http://localhost:%s/assets/%s", cfg.port, assetDiskPath)
 	video.ThumbnailURL = &thumbnailURL
