@@ -1,9 +1,15 @@
 package main
 
 import (
+	"bytes"
 	"crypto/rand"
 	"encoding/base64"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"math"
 	"os"
+	"os/exec"
 	"strings"
 )
 
@@ -42,4 +48,46 @@ func isValidImageType(mediaType string) bool {
 		default:
 			return false
 	}
+}
+
+func getVideoAspectRatio(filePath string) (string, error) {
+	cmd := exec.Command("ffprobe", 
+		"-v", "error", 
+		"-print_format", "json", 
+		"-show_streams", 
+		filePath)
+	
+	var buffer bytes.Buffer
+	cmd.Stdout = &buffer
+
+	if err := cmd.Run(); err != nil {
+		return "", fmt.Errorf("ffprobe error: %v", err)
+	}
+
+	var output struct {
+		Streams []struct {
+			Width int `json:"width"`
+			Height int `json:"height"`
+		} `json:"streams"`
+	}
+
+	if err := json.Unmarshal(buffer.Bytes(), &output); err != nil {
+		return "", fmt.Errorf("could not parse ffprobe output: %v", err)
+	}
+
+	if len(output.Streams) == 0 {
+		return "", errors.New("no video streams found")
+	}
+
+	landscapeRatio := 16.0 / 9.0
+	portraitRatio := 9.0 / 16.0
+	videoRatio := float64(output.Streams[0].Width) / float64(output.Streams[0].Height)
+
+	if math.Abs(videoRatio-landscapeRatio) < 0.1 {
+		return "16:9", nil
+	}
+	if math.Abs(videoRatio-portraitRatio) < 0.1 {
+		return "9:16", nil
+	}
+	return "other", nil
 }
