@@ -1,19 +1,14 @@
 package main
 
 import (
-	"context"
-	"errors"
 	"fmt"
 	"io"
 	"mime"
 	"net/http"
 	"os"
-	"strings"
-	"time"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/bootdotdev/learn-file-storage-s3-golang-starter/internal/auth"
-	"github.com/bootdotdev/learn-file-storage-s3-golang-starter/internal/database"
 	"github.com/google/uuid"
 )
 
@@ -131,7 +126,8 @@ func (cfg *apiConfig) handlerUploadVideo(w http.ResponseWriter, r *http.Request)
 	}
 
 	// objectUrl := fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s", cfg.s3Bucket, cfg.s3Region, key)
-	objectUrl := fmt.Sprintf("%s,%s", cfg.s3Bucket, key)
+	// objectUrl := fmt.Sprintf("%s,%s", cfg.s3Bucket, key)
+	objectUrl := fmt.Sprintf("https://%s/%s", cfg.s3CfDistribution, key)
 	video.VideoURL = &objectUrl
 
 	err = cfg.db.UpdateVideo(video)
@@ -140,15 +136,16 @@ func (cfg *apiConfig) handlerUploadVideo(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	signedVideo, err := cfg.dbVideoToSignedVideo(video)
-	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Couldn't generate presigned URL", err)
-		return
-	}
+	// signedVideo, err := cfg.dbVideoToSignedVideo(video)
+	// if err != nil {
+	// 	respondWithError(w, http.StatusInternalServerError, "Couldn't generate presigned URL", err)
+	// 	return
+	// }
 
-	respondWithJSON(w, http.StatusOK, signedVideo)
+	respondWithJSON(w, http.StatusOK, video)
 }
 
+/*
 
 func generatePresignedURL(s3Client *s3.Client, bucket, key string, expireTime time.Duration) (string, error) {
 	s3PresignClient := s3.NewPresignClient(s3Client)
@@ -184,3 +181,5 @@ func (cfg *apiConfig) dbVideoToSignedVideo(video database.Video) (database.Video
 	video.VideoURL = &signedURL
 	return video, nil
 }
+
+*/
